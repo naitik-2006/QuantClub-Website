@@ -14,7 +14,14 @@ async function kvGet<T>(key: string): Promise<T | null> {
   });
   const json = await res.json();
   if (json.result === null || json.result === undefined) return null;
-  return JSON.parse(json.result) as T;
+  
+  if (typeof json.result === 'object') return json.result as T;
+  
+  try {
+    return JSON.parse(json.result) as T;
+  } catch {
+    return null;
+  }
 }
 
 async function kvSet<T>(key: string, data: T): Promise<void> {
@@ -28,7 +35,7 @@ async function kvSet<T>(key: string, data: T): Promise<void> {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(JSON.stringify(data)), // double-stringify: outer is fetch body, inner is stored value
+    body: JSON.stringify(data),
   });
 }
 
