@@ -106,7 +106,9 @@ export default function OpportunitiesClient({ initialOpportunities }: { initialO
   const headerRef = useRef(null);
   const headerInView = useInView(headerRef, { once: true });
   
-  const [opportunities] = useState<Opportunity[]>(initialOpportunities);
+  const oppsData = Array.isArray(initialOpportunities) ? initialOpportunities : 
+                   typeof initialOpportunities === 'string' ? JSON.parse(initialOpportunities) : [];
+  const [opportunities] = useState<Opportunity[]>(oppsData);
 
   return (
     <div className="min-h-screen pt-24 pb-24 px-6 md:px-12">

@@ -236,9 +236,11 @@ export default function ResourcesClient({ initialResources }: { initialResources
   const headerInView = useInView(headerRef, { once: true });
 
   const iconMap: Record<string, any> = { BookOpen, Star, Zap, Calculator, Target, ExternalLink, Activity, Sigma, Puzzle, Globe, Layers, TrendingUp, Code2, Brain, Terminal, Settings, Cpu, Network, BarChart2 };
-  const [allResources] = useState<Resource[]>(() => 
-    initialResources.map(r => ({ ...r, icon: iconMap[r.iconName] || BookOpen }))
-  );
+  const [allResources] = useState<Resource[]>(() => {
+    const data = Array.isArray(initialResources) ? initialResources :
+                 typeof initialResources === 'string' ? JSON.parse(initialResources) : [];
+    return data.map((r: any) => ({ ...r, icon: iconMap[r.iconName] || BookOpen }));
+  });
 
   // Dynamic categories and counts
   const categoryCounts = useMemo(() => {

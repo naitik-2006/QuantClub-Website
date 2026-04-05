@@ -149,11 +149,13 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
 
 /* ─── Page ─── */
 export default function TeamClient({ initialMembers }: { initialMembers: Member[] }) {
-  const [members] = useState<Member[]>(initialMembers);
+  const membersData = Array.isArray(initialMembers) ? initialMembers : 
+                      typeof initialMembers === 'string' ? JSON.parse(initialMembers) : [];
+  const [members] = useState<Member[]>(membersData);
   const loading = false;
 
   // Group members by section — preserve insertion order
-  const sectionsMap = members.reduce((acc, member) => {
+  const sectionsMap = (Array.isArray(members) ? members : []).reduce((acc, member) => {
     const s = member.section || 'OTHER';
     if (!acc[s]) acc[s] = [];
     acc[s].push(member);
