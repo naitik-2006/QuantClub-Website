@@ -5,8 +5,8 @@ export function getAdminToken(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-export function verifyAdmin(): boolean {
-  const cookieStore = cookies();
+export async function verifyAdmin(): Promise<boolean> {
+  const cookieStore = await cookies();
   const token = cookieStore.get('admin_token')?.value;
   
   // Use environment variable in production, fallback for testing

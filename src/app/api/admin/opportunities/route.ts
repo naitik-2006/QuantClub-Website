@@ -9,7 +9,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!verifyAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await verifyAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     const newOpp = await request.json();
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!verifyAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await verifyAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     const { searchParams } = new URL(request.url);
