@@ -8,11 +8,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
-  { href: '/',          label: 'HOME' },
-  { href: '/calendar',  label: 'CALENDAR' },
-  { href: '/resources', label: 'RESOURCES' },
-  { href: '/team',      label: 'TEAM' },
-  { href: '/contact',   label: 'CONTACT' },
+  { href: '/',             label: 'HOME' },
+  { href: '/calendar',     label: 'CALENDAR' },
+  { href: '/resources',    label: 'RESOURCES' },
+  { href: '/opportunities', label: 'OPPORTUNITIES' },
+  { href: '/team',         label: 'TEAM' },
+  { href: '/contact',      label: 'CONTACT' },
 ];
 
 /* Logo — transparent PNG with name baked in */

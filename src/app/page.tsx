@@ -12,6 +12,10 @@ import {
   Activity,
   Database,
   LineChart,
+  Trophy,
+  Medal,
+  Crown,
+  Award,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -36,6 +40,39 @@ const stats = [
   { value: '14+', label: 'PROJECTS' },
   { value: '3',   label: 'YEARS' },
   { value: '∞',   label: 'ALPHA' },
+];
+
+const achievements = [
+  {
+    icon: Crown,
+    rank: '#3',
+    title: 'WORLDQUANT',
+    subtitle: 'GLOBAL RANKING',
+    description: 'Ranked 3rd globally in the WorldQuant International Quant Championship among thousands of university teams.',
+    color: '#FFD700',
+    glow: 'rgba(255,215,0,0.15)',
+    gradient: 'from-yellow-500/20 via-amber-500/10 to-transparent',
+  },
+  {
+    icon: Trophy,
+    rank: '#5',
+    title: 'QUANTCONNECT',
+    subtitle: 'LEAGUE RANKING',
+    description: 'Secured 5th position in the QuantConnect League, demonstrating strong algorithmic trading strategy performance.',
+    color: '#00FFFF',
+    glow: 'rgba(0,255,255,0.15)',
+    gradient: 'from-cyan-500/20 via-teal-500/10 to-transparent',
+  },
+  {
+    icon: Medal,
+    rank: 'BRONZE',
+    title: 'INTER IIT 14.0',
+    subtitle: 'TECH MEET',
+    description: 'Won the Bronze Medal at Inter IIT Tech Meet 14.0, competing against top engineering institutes across India.',
+    color: '#CD7F32',
+    glow: 'rgba(205,127,50,0.15)',
+    gradient: 'from-orange-500/20 via-amber-600/10 to-transparent',
+  },
 ];
 
 const projects = [
@@ -67,6 +104,78 @@ function SectionHeader({ label, title }: { label: string; title: React.ReactNode
         {title}
       </h2>
     </div>
+  );
+}
+
+function AchievementCard({
+  icon: Icon, rank, title, subtitle, description, color, glow, gradient, index,
+}: {
+  icon: React.ElementType;
+  rank: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  color: string;
+  glow: string;
+  gradient: string;
+  index: number;
+}) {
+  return (
+    <motion.div
+      variants={fadeUp}
+      custom={index}
+      whileHover={{ y: -8, transition: { duration: 0.25 } }}
+      className="relative group cursor-pointer"
+    >
+      {/* Outer glow on hover */}
+      <div
+        className="absolute -inset-1 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+        style={{ background: glow }}
+      />
+
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} border border-white/[0.06] group-hover:border-white/[0.15] transition-all duration-500`}
+        style={{ background: 'linear-gradient(135deg, rgba(15,15,20,0.95) 0%, rgba(10,10,15,0.98) 100%)' }}
+      >
+        {/* Top accent line */}
+        <div
+          className="absolute top-0 left-8 right-8 h-px opacity-60"
+          style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
+        />
+
+        <div className="relative p-6 sm:p-8 space-y-5">
+          {/* Icon + Rank */}
+          <div className="flex items-start justify-between">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+              style={{ background: `${color}12`, border: `1px solid ${color}25` }}
+            >
+              <Icon className="w-6 h-6" style={{ color }} strokeWidth={1.5} />
+            </div>
+            <div className="text-right">
+              <p
+                className="font-black text-4xl sm:text-5xl tracking-tighter leading-none transition-all duration-300 group-hover:scale-105"
+                style={{ color, textShadow: `0 0 30px ${color}40` }}
+              >
+                {rank}
+              </p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="space-y-1.5">
+            <h3 className="font-mono text-sm font-bold tracking-[0.15em] text-white group-hover:text-white transition-colors">
+              {title}
+            </h3>
+            <p className="font-mono text-[0.65rem] tracking-[0.12em] text-white/35">{subtitle}</p>
+          </div>
+
+          <p className="text-white/45 text-sm leading-relaxed">{description}</p>
+
+          {/* Decorative line */}
+          <div className="h-px w-12 rounded-full" style={{ background: `${color}40` }} />
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -112,10 +221,12 @@ function ProjectCard({
 }
 
 export default function HomePage() {
-  const aboutRef    = useRef(null);
-  const projectsRef = useRef(null);
-  const aboutInView    = useInView(aboutRef,    { once: true, margin: '-80px' });
-  const projectsInView = useInView(projectsRef, { once: true, margin: '-80px' });
+  const aboutRef        = useRef(null);
+  const achievementsRef = useRef(null);
+  const projectsRef     = useRef(null);
+  const aboutInView        = useInView(aboutRef,        { once: true, margin: '-80px' });
+  const achievementsInView = useInView(achievementsRef, { once: true, margin: '-80px' });
+  const projectsInView     = useInView(projectsRef,     { once: true, margin: '-80px' });
 
   return (
     <div>
@@ -136,7 +247,7 @@ export default function HomePage() {
               custom={0}
               className="font-mono text-[0.65rem] tracking-[0.4em] text-electric-cyan/70"
             >
-              EST. 2021 · UNIVERSITY QUANT FINANCE SOCIETY
+              EST. 2021 · IIT BHU VARANASI · QUANT FINANCE SOCIETY
             </motion.p>
 
             <motion.h1
@@ -209,6 +320,7 @@ export default function HomePage() {
         </motion.div>
       </section>
 
+      {/* ─── About Section ─── */}
       <section
         ref={aboutRef}
         className="relative py-20 md:py-32 px-5 sm:px-6 max-w-7xl mx-auto"
@@ -231,7 +343,7 @@ export default function HomePage() {
 
           <motion.div variants={fadeUp} custom={1} className="space-y-6">
             <p className="text-silver leading-8 text-base">
-              The Quant Club is a student organization for aspiring quantitative analysts,
+              The Quant Club at IIT BHU Varanasi is a student organization for aspiring quantitative analysts,
               algorithmic traders, and data scientists. We bridge the gap between academic theory and
               real-world financial markets through research, collaborative projects, and
               industry mentorship.
@@ -260,6 +372,43 @@ export default function HomePage() {
         </motion.div>
       </section>
 
+      {/* ─── Achievements Section ─── */}
+      <section className="relative py-20 md:py-32 px-5 sm:px-6">
+        {/* Ambient glow */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(255,215,0,0.03) 0%, transparent 100%)',
+        }} />
+
+        <div className="max-w-7xl mx-auto" ref={achievementsRef}>
+          <motion.div
+            initial="hidden"
+            animate={achievementsInView ? 'visible' : 'hidden'}
+            variants={stagger}
+            className="space-y-14"
+          >
+            <motion.div variants={fadeUp} className="space-y-3">
+              <SectionHeader
+                label="// ACHIEVEMENTS"
+                title={<>PROVEN<br /><span className="text-electric-cyan">EXCELLENCE.</span></>}
+              />
+              <motion.p variants={fadeUp} custom={1} className="text-silver/60 text-sm max-w-lg leading-relaxed">
+                Our members consistently rank among the best in global quantitative finance competitions.
+              </motion.p>
+            </motion.div>
+
+            <motion.div
+              variants={stagger}
+              className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6"
+            >
+              {achievements.map((a, i) => (
+                <AchievementCard key={a.title} {...a} index={i} />
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Projects Section ─── */}
       <section className="relative py-20 md:py-32 px-5 sm:px-6">
         <div className="absolute inset-0 bg-radial-glow pointer-events-none" />
 

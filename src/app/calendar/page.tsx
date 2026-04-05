@@ -274,23 +274,46 @@ export default function CalendarPage() {
   const [year,     setYear]     = useState(now.getFullYear());
   const [month,    setMonth]    = useState(now.getMonth());
   const [selected, setSelected] = useState<CalEvent | null>(null);
-  const [events,   setEvents]   = useState<CalEvent[]>(STATIC_EVENTS);
-  const [loading,  setLoading]  = useState(false);
-  const [source,   setSource]   = useState<'static' | 'google'>('static');
+  const [events,   setEvents]   = useState<CalEvent[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [source,   setSource]   = useState<'static' | 'google' | 'mixed'>('static');
 
-  /* ─── Fetch from Google Calendar if env vars are set ─── */
+  /* ─── Fetch Events ─── */
   useEffect(() => {
-    const calId  = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID;
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_API_KEY;
-    if (!calId || !apiKey) return;
-    setLoading(true);
-    fetchGoogleCalendarEvents(calId, apiKey)
-      .then(gcEvents => {
-        setEvents(gcEvents);
-        setSource('google');
-      })
-      .catch(err => console.warn('[Calendar] Falling back to static events:', err))
-      .finally(() => setLoading(false));
+    async function loadEvents() {
+      setLoading(true);
+      try {
+        // 1. Always load internal/admin events
+        const adminRes = await fetch('/api/admin/events');
+        const adminEvents: CalEvent[] = adminRes.ok ? await adminRes.json() : [];
+        let allEvents = [...STATIC_EVENTS, ...adminEvents];
+
+        // 2. Try fetching Google Calendar if env vars present
+        const calId  = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID;
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_API_KEY;
+        
+        if (calId && apiKey) {
+          try {
+            const gcEvents = await fetchGoogleCalendarEvents(calId, apiKey);
+            allEvents = [...allEvents, ...gcEvents];
+            setSource('mixed');
+          } catch (err) {
+            console.warn('[Calendar] Google sync failed:', err);
+            setSource('static');
+          }
+        } else {
+          setSource('static');
+        }
+        
+        setEvents(allEvents);
+      } catch (error) {
+        console.error('Failed to load events:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadEvents();
   }, []);
 
   const prevMonth = () => {

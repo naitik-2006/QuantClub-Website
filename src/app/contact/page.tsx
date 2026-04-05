@@ -21,21 +21,21 @@ const CONTACT_INFO = [
   {
     icon: Mail,
     label: 'EMAIL US',
-    value: 'quantclub@university.edu',
-    href: 'mailto:quantclub@university.edu',
+    value: 'thequantclub.iitbhu@gmail.com',
+    href: 'mailto:thequantclub.iitbhu@gmail.com',
     sub: 'We check this daily',
   },
   {
-    icon: MessageCircle,
-    label: 'DISCORD',
-    value: 'discord.gg/quantclub',
-    href: '#',
-    sub: 'Fastest way to reach us',
+    icon: Linkedin,
+    label: 'LINKEDIN',
+    value: 'The Quant Club IIT BHU',
+    href: 'https://www.linkedin.com/company/the-quant-club-iit-bhu-varanasi/',
+    sub: 'Follow us for updates',
   },
   {
     icon: MapPin,
     label: 'FIND US',
-    value: 'Student Union, Level 2\nClub Room 12',
+    value: 'IIT BHU Varanasi\nUttar Pradesh, India',
     href: '#',
     sub: 'During semester weeks',
   },
@@ -49,10 +49,7 @@ const CONTACT_INFO = [
 ];
 
 const SOCIALS = [
-  { icon: Github,        label: 'GitHub',   href: '#' },
-  { icon: Twitter,       label: 'Twitter',  href: '#' },
-  { icon: Linkedin,      label: 'LinkedIn', href: '#' },
-  { icon: MessageCircle, label: 'Discord',  href: '#' },
+  { icon: Linkedin,      label: 'LinkedIn',  href: 'https://www.linkedin.com/company/the-quant-club-iit-bhu-varanasi/' },
 ];
 
 const SUBJECTS = [

@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "name": "Lakshay Vats",
+    "role": "SECRETARY",
+    "department": "The Quant Club",
+    "tags": ["LEADERSHIP", "STRATEGY", "QUANT FINANCE"],
+    "linkedin": "#",
+    "email": "#",
+    "gradient": "from-cyan-900/40 to-cyan-800/20",
+    "section": "LEADERSHIP"
+  },
+  {
+    "id": 2,
+    "name": "Yogesh Garg",
+    "role": "JOINT SECRETARY",
+    "department": "The Quant Club",
+    "tags": ["ALGO TRADING", "RESEARCH", "ML"],
+    "linkedin": "#",
+    "email": "#",
+    "gradient": "from-violet-900/40 to-violet-800/20",
+    "section": "LEADERSHIP"
+  },
+  {
+    "id": 3,
+    "name": "Pratyush Sinha",
+    "role": "JOINT SECRETARY",
+    "department": "The Quant Club",
+    "tags": ["QUANTITATIVE RESEARCH", "C++", "MARKETS"],
+    "linkedin": "#",
+    "email": "#",
+    "gradient": "from-blue-900/40 to-blue-800/20",
+    "section": "LEADERSHIP"
+  }
+]

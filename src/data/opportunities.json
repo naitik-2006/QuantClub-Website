@@ -1,0 +1,34 @@
+[
+  {
+    "id": "jane-street-intern",
+    "title": "Quantitative Trader Intern",
+    "company": "Jane Street",
+    "type": "INTERNSHIP",
+    "location": "Hong Kong / London / NYC",
+    "deadline": "AUG 2025",
+    "tags": ["MARKET MAKING", "STREET-READY", "C++"],
+    "description": "Work alongside experienced traders to solve complex problems in a fast-paced environment. Competitive compensation and deep learning curve.",
+    "href": "https://www.janestreet.com/join-jane-street/position/quantitative-trader-internship/"
+  },
+  {
+    "id": "citadel-research",
+    "title": "Quantitative Researcher",
+    "company": "Citadel Securities",
+    "type": "FULL-TIME",
+    "location": "Miami / London / APAC",
+    "tags": ["RESEARCH", "MACHINE LEARNING", "STATISTICS"],
+    "description": "Build predictive models and high-performance trading strategies using massive datasets and cutting-edge technology.",
+    "href": "https://www.citadelsecurities.com/careers/positions/quantitative-researcher/"
+  },
+  {
+    "id": "world-quant-challenge",
+    "title": "International Quant Championship",
+    "company": "WorldQuant",
+    "type": "COMPETITION",
+    "location": "Global / Online",
+    "deadline": "MAY 2025",
+    "tags": ["ALPHAS", "VRC", "PRIZE POOL"],
+    "description": "A global competition to build the best predictive signals (alphas). Top performers gain access to consulting roles.",
+    "href": "https://www.worldquant.com/challenge/"
+  }
+]

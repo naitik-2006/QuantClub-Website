@@ -2,6 +2,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Github, Twitter, Linkedin, Mail, MessageCircle } from 'lucide-react';
 
+/* Instagram SVG icon (lucide-react doesn't include one) */
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 const navLinks = [
   { href: '/',          label: 'HOME' },
   { href: '/calendar',  label: 'CALENDAR' },
@@ -11,11 +22,9 @@ const navLinks = [
 ];
 
 const socials = [
-  { href: '#', icon: Github,         label: 'GitHub' },
-  { href: '#', icon: Twitter,        label: 'Twitter' },
-  { href: '#', icon: Linkedin,       label: 'LinkedIn' },
-  { href: '#', icon: MessageCircle,  label: 'Discord' },
-  { href: '#', icon: Mail,           label: 'Email' },
+  { href: 'https://www.linkedin.com/company/the-quant-club-iit-bhu-varanasi/', icon: Linkedin,      label: 'LinkedIn' },
+  { href: 'https://www.instagram.com/quantclub.iitbhu/',                        icon: InstagramIcon,  label: 'Instagram' },
+  { href: 'mailto:thequantclub.iitbhu@gmail.com',                                 icon: Mail,           label: 'Email' },
 ];
 
 export default function Footer() {
@@ -48,6 +57,8 @@ export default function Footer() {
                 <a
                   key={label}
                   href={href}
+                  target={href.startsWith('http') ? '_blank' : undefined}
+                  rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   aria-label={label}
                   className="w-8 h-8 border border-white/10 rounded flex items-center justify-center text-silver/40 hover:border-electric-cyan/50 hover:text-electric-cyan transition-all duration-200 hover:shadow-[0_0_8px_rgba(0,255,255,0.3)]"
                 >
@@ -77,14 +88,29 @@ export default function Footer() {
             <p className="section-label mb-5">CONNECT</p>
             <div className="space-y-3">
               <p className="font-mono text-xs tracking-wider text-silver/60">
-                quantclub@university.edu
+                thequantclub.iitbhu@gmail.com
               </p>
               <p className="font-mono text-xs tracking-wider text-silver/60">
-                Student Union Building<br />Level 2, Club Room 12
+                IIT BHU Varanasi<br />Uttar Pradesh, India
               </p>
-              <p className="font-mono text-xs tracking-wider text-electric-cyan/50">
-                Discord: discord.gg/quantclub
-              </p>
+              <div className="flex flex-col gap-1.5 pt-1">
+                <a
+                  href="https://www.linkedin.com/company/the-quant-club-iit-bhu-varanasi/posts/?feedView=all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs tracking-wider text-electric-cyan/50 hover:text-electric-cyan transition-colors"
+                >
+                  LinkedIn →
+                </a>
+                <a
+                  href="https://www.instagram.com/quantclub.iitbhu/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs tracking-wider text-electric-cyan/50 hover:text-electric-cyan transition-colors"
+                >
+                  Instagram →
+                </a>
+              </div>
               <Link
                 href="/contact"
                 className="inline-block mt-3 font-mono text-xs tracking-[0.15em] text-electric-cyan border border-electric-cyan/35 px-4 py-2 hover:bg-electric-cyan hover:text-black transition-all duration-200 hover:shadow-[0_0_14px_rgba(0,255,255,0.35)] rounded-sm"
@@ -97,7 +123,7 @@ export default function Footer() {
 
         <div className="mt-14 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="font-mono text-[0.58rem] tracking-[0.2em] text-white/20">
-            © {new Date().getFullYear()} THE QUANT CLUB · ALL RIGHTS RESERVED.
+            © {new Date().getFullYear()} THE QUANT CLUB · IIT BHU VARANASI · ALL RIGHTS RESERVED.
           </p>
           <p className="font-mono text-[0.58rem] tracking-[0.14em] text-white/15">
             BUILT WITH PRECISION. ENGINEERED FOR ALPHA.
