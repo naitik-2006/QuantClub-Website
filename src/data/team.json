@@ -4,32 +4,67 @@
     "name": "Lakshay Vats",
     "role": "SECRETARY",
     "department": "The Quant Club",
-    "tags": ["LEADERSHIP", "STRATEGY", "QUANT FINANCE"],
+    "tags": [
+      "LEADERSHIP",
+      "STRATEGY",
+      "QUANT FINANCE"
+    ],
     "linkedin": "#",
     "email": "#",
     "gradient": "from-cyan-900/40 to-cyan-800/20",
-    "section": "LEADERSHIP"
+    "section": "LEADERSHIP",
+    "order": 1,
+    "sectionOrder": 0
   },
   {
     "id": 2,
     "name": "Yogesh Garg",
     "role": "JOINT SECRETARY",
     "department": "The Quant Club",
-    "tags": ["ALGO TRADING", "RESEARCH", "ML"],
+    "tags": [
+      "ALGO TRADING",
+      "RESEARCH",
+      "ML"
+    ],
     "linkedin": "#",
     "email": "#",
     "gradient": "from-violet-900/40 to-violet-800/20",
-    "section": "LEADERSHIP"
+    "section": "LEADERSHIP",
+    "order": 3,
+    "sectionOrder": 0
   },
   {
     "id": 3,
     "name": "Pratyush Sinha",
     "role": "JOINT SECRETARY",
     "department": "The Quant Club",
-    "tags": ["QUANTITATIVE RESEARCH", "C++", "MARKETS"],
+    "tags": [
+      "QUANTITATIVE RESEARCH",
+      "C++",
+      "MARKETS"
+    ],
     "linkedin": "#",
     "email": "#",
     "gradient": "from-blue-900/40 to-blue-800/20",
-    "section": "LEADERSHIP"
+    "section": "LEADERSHIP",
+    "order": 2,
+    "sectionOrder": 0
+  },
+  {
+    "name": "Naitik",
+    "role": "Chutiyap Krna",
+    "department": "The Quant Club",
+    "section": "Lund Team",
+    "tags": [
+      "Gaand Marna"
+    ],
+    "gradient": "from-cyan-900/40 to-cyan-800/20",
+    "linkedin": "",
+    "github": "",
+    "email": "",
+    "image": "/uploads/img-1775431385250.png",
+    "id": 1775431385626,
+    "order": 0,
+    "sectionOrder": 1
   }
 ]

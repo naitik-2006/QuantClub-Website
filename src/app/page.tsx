@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import {
@@ -16,6 +16,8 @@ import {
   Medal,
   Crown,
   Award,
+  ExternalLink,
+  Github,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -42,59 +44,36 @@ const stats = [
   { value: '∞',   label: 'ALPHA' },
 ];
 
-const achievements = [
-  {
-    icon: Crown,
-    rank: '#3',
-    title: 'WORLDQUANT',
-    subtitle: 'GLOBAL RANKING',
-    description: 'Ranked 3rd globally in the WorldQuant International Quant Championship among thousands of university teams.',
-    color: '#FFD700',
-    glow: 'rgba(255,215,0,0.15)',
-    gradient: 'from-yellow-500/20 via-amber-500/10 to-transparent',
-  },
-  {
-    icon: Trophy,
-    rank: '#5',
-    title: 'QUANTCONNECT',
-    subtitle: 'LEAGUE RANKING',
-    description: 'Secured 5th position in the QuantConnect League, demonstrating strong algorithmic trading strategy performance.',
-    color: '#00FFFF',
-    glow: 'rgba(0,255,255,0.15)',
-    gradient: 'from-cyan-500/20 via-teal-500/10 to-transparent',
-  },
-  {
-    icon: Medal,
-    rank: 'BRONZE',
-    title: 'INTER IIT 14.0',
-    subtitle: 'TECH MEET',
-    description: 'Won the Bronze Medal at Inter IIT Tech Meet 14.0, competing against top engineering institutes across India.',
-    color: '#CD7F32',
-    glow: 'rgba(205,127,50,0.15)',
-    gradient: 'from-orange-500/20 via-amber-600/10 to-transparent',
-  },
-];
+const ICON_MAP: Record<string, React.ElementType> = {
+  Crown, Trophy, Medal, Award,
+  LineChart, BarChart2, Brain, Sigma
+};
 
-const projects = [
-  {
-    icon: BarChart2,
-    title: 'QUANT STRATEGY ALPHA',
-    description: 'A systematic momentum strategy backtested over 10 years of equity data with live paper-trading integration.',
-    tags: ['PYTHON', 'C++', 'BACKTESTING', 'PANDAS'],
-  },
-  {
-    icon: Brain,
-    title: 'ML SIGNAL PREDICTOR',
-    description: 'LSTM-based price movement classifier trained on multi-asset tick data with custom feature engineering pipelines.',
-    tags: ['PYTHON', 'TENSORFLOW', 'TIME-SERIES', 'SKLEARN'],
-  },
-  {
-    icon: Sigma,
-    title: 'OPTIONS PRICER ENGINE',
-    description: 'Real-time Black-Scholes and Monte Carlo options pricing with Greeks computation and vol-surface visualization.',
-    tags: ['C++', 'PYTHON', 'MATH', 'MONTE CARLO'],
-  },
-];
+interface Achievement {
+  id: number;
+  title: string;
+  rank: string;
+  subtitle: string;
+  description: string;
+  order: number;
+  icon: string;
+  color: string;
+  glow: string;
+  gradient: string;
+  href?: string;
+  github?: string;
+}
+
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  tags: string[];
+  order: number;
+  href?: string;
+  github?: string;
+}
 
 function SectionHeader({ label, title }: { label: string; title: React.ReactNode }) {
   return (
@@ -108,9 +87,9 @@ function SectionHeader({ label, title }: { label: string; title: React.ReactNode
 }
 
 function AchievementCard({
-  icon: Icon, rank, title, subtitle, description, color, glow, gradient, index,
+  icon, rank, title, subtitle, description, color, glow, gradient, index, href, github
 }: {
-  icon: React.ElementType;
+  icon: string | React.ElementType;
   rank: string;
   title: string;
   subtitle: string;
@@ -119,13 +98,19 @@ function AchievementCard({
   glow: string;
   gradient: string;
   index: number;
+  href?: string;
+  github?: string;
 }) {
+  const Icon: React.ElementType = typeof icon === 'string'
+    ? (ICON_MAP[icon] ?? Trophy)
+    : icon;
+  
   return (
     <motion.div
       variants={fadeUp}
       custom={index}
       whileHover={{ y: -8, transition: { duration: 0.25 } }}
-      className="relative group cursor-pointer"
+      className="relative group cursor-pointer h-full"
     >
       {/* Outer glow on hover */}
       <div
@@ -172,7 +157,23 @@ function AchievementCard({
           <p className="text-white/45 text-sm leading-relaxed">{description}</p>
 
           {/* Decorative line */}
-          <div className="h-px w-12 rounded-full" style={{ background: `${color}40` }} />
+          <div className="h-px w-12 rounded-full mt-4" style={{ background: `${color}40` }} />
+
+          {/* Action Links */}
+          {(href || github) && (
+            <div className="flex gap-3 pt-4 border-t border-white/5 mt-4">
+              {github && (
+                <a href={github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[0.65rem] font-mono tracking-wider text-silver hover:text-white transition-colors" onClick={e=>e.stopPropagation()}>
+                  <Github className="w-3.5 h-3.5" /> REPOSITORY
+                </a>
+              )}
+              {href && (
+                <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[0.65rem] font-mono tracking-wider text-silver hover:text-white transition-colors" onClick={e=>e.stopPropagation()}>
+                  <ExternalLink className="w-3.5 h-3.5" /> EXPERIEMENT
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
@@ -180,20 +181,25 @@ function AchievementCard({
 }
 
 function ProjectCard({
-  icon: Icon, title, description, tags, index,
+  icon, title, description, tags, index, href, github
 }: {
-  icon: React.ElementType;
+  icon: string | React.ElementType;
   title: string;
   description: string;
   tags: string[];
   index: number;
+  href?: string;
+  github?: string;
 }) {
+  const Icon: React.ElementType = typeof icon === 'string'
+    ? (ICON_MAP[icon] ?? BarChart2)
+    : icon;
   return (
     <motion.div
       variants={fadeUp}
       custom={index}
       whileHover={{ y: -6, transition: { duration: 0.25 } }}
-      className="glass-card rounded-sm p-6 group cursor-pointer transition-all duration-300 flex flex-col gap-5"
+      className="glass-card rounded-sm p-6 group cursor-pointer transition-all duration-300 flex flex-col gap-5 h-full"
     >
       <div className="flex items-start justify-between">
         <div className="w-10 h-10 border border-electric-cyan/20 rounded flex items-center justify-center bg-electric-cyan/5 group-hover:border-electric-cyan/50 group-hover:bg-electric-cyan/10 transition-all duration-300">
@@ -216,6 +222,21 @@ function ProjectCard({
           <span key={tag} className="tag-pill">{tag}</span>
         ))}
       </div>
+
+      {(href || github) && (
+        <div className="flex gap-3 pt-4 border-t border-white/5 mt-2">
+          {github && (
+            <a href={github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[0.65rem] font-mono tracking-wider text-silver hover:text-white transition-colors" onClick={e=>e.stopPropagation()}>
+              <Github className="w-3.5 h-3.5" /> REPOSITORY
+            </a>
+          )}
+          {href && (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[0.65rem] font-mono tracking-wider text-silver hover:text-white transition-colors" onClick={e=>e.stopPropagation()}>
+              <ExternalLink className="w-3.5 h-3.5" /> LIVE
+            </a>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -227,6 +248,24 @@ export default function HomePage() {
   const aboutInView        = useInView(aboutRef,        { once: true, margin: '-80px' });
   const achievementsInView = useInView(achievementsRef, { once: true, margin: '-80px' });
   const projectsInView     = useInView(projectsRef,     { once: true, margin: '-80px' });
+
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  useEffect(() => {
+    fetch('/api/admin/achievements')
+      .then(r => r.ok ? r.json() : [])
+      .then((data: Achievement[]) => {
+        setAchievements([...data].sort((a, b) => (a.order ?? 99) - (b.order ?? 99)));
+      })
+      .catch(() => setAchievements([]));
+
+    fetch('/api/admin/projects')
+      .then(r => r.ok ? r.json() : [])
+      .then((data: Project[]) => {
+        setProjects([...data].sort((a, b) => (a.order ?? 99) - (b.order ?? 99)));
+      })
+      .catch(() => setProjects([]));
+  }, []);
 
   return (
     <div>
@@ -400,8 +439,8 @@ export default function HomePage() {
               variants={stagger}
               className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6"
             >
-              {achievements.map((a, i) => (
-                <AchievementCard key={a.title} {...a} index={i} />
+              {achievements.map((a: Achievement, i: number) => (
+                <AchievementCard key={a.id} {...a} index={i} />
               ))}
             </motion.div>
           </motion.div>
@@ -430,8 +469,8 @@ export default function HomePage() {
               variants={stagger}
               className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6"
             >
-              {projects.map((p, i) => (
-                <ProjectCard key={p.title} {...p} index={i} />
+              {projects.map((p: Project, i: number) => (
+                <ProjectCard key={p.id} {...p} index={i} />
               ))}
             </motion.div>
 

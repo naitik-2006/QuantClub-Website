@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title": "QUANT STRATEGY ALPHA",
+    "description": "A systematic momentum strategy backtested over 10 years of equity data with live paper-trading integration.",
+    "icon": "BarChart2",
+    "tags": ["PYTHON", "C++", "BACKTESTING", "PANDAS"],
+    "href": "",
+    "order": 0
+  },
+  {
+    "id": 2,
+    "title": "ML SIGNAL PREDICTOR",
+    "description": "LSTM-based price movement classifier trained on multi-asset tick data with custom feature engineering pipelines.",
+    "icon": "Brain",
+    "tags": ["PYTHON", "TENSORFLOW", "TIME-SERIES", "SKLEARN"],
+    "href": "",
+    "order": 1
+  },
+  {
+    "id": 3,
+    "title": "OPTIONS PRICER ENGINE",
+    "description": "Real-time Black-Scholes and Monte Carlo options pricing with Greeks computation and vol-surface visualization.",
+    "icon": "Sigma",
+    "tags": ["C++", "PYTHON", "MATH", "MONTE CARLO"],
+    "href": "",
+    "order": 2
+  }
+]

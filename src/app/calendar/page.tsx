@@ -17,6 +17,8 @@ import {
   User,
   RefreshCw,
   CheckCircle2,
+  CalendarPlus,
+  Download,
 } from 'lucide-react';
 import { fetchGoogleCalendarEvents, type CalEvent, type EventType, type Format } from '@/lib/googleCalendar';
 import { STATIC_EVENTS } from '@/data/events';
@@ -72,6 +74,49 @@ function EventPill({ event, onClick }: { event: CalEvent; onClick: () => void })
       {event.title}
     </button>
   );
+}
+
+/* ─── Calendar Utilities ─── */
+function makeGoogleCalUrl(event: CalEvent): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  // Use noon as start, add 2h as end (time string may vary)
+  const dateStr = `${event.year}${pad(event.month + 1)}${pad(event.day)}`;
+  const start = `${dateStr}T120000`;
+  const end   = `${dateStr}T140000`;
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.title,
+    dates: `${start}/${end}`,
+    details: event.description || '',
+    location: event.location || '',
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function downloadICS(event: CalEvent) {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const dateStr = `${event.year}${pad(event.month + 1)}${pad(event.day)}`;
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Quant Club IIT BHU//EN',
+    'BEGIN:VEVENT',
+    `SUMMARY:${event.title}`,
+    `DTSTART:${dateStr}T120000`,
+    `DTEND:${dateStr}T140000`,
+    `LOCATION:${event.location || ''}`,
+    `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
+    `UID:qc-${event.id}@iitbhu.ac.in`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  const blob = new Blob([ics], { type: 'text/calendar' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${event.title.replace(/\s+/g, '-').toLowerCase()}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ─── Detail Panel ─── */
@@ -150,7 +195,7 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
           )}
         </div>
 
-        {event.link ? (
+        {event.link && (
           <a
             href={event.link}
             target="_blank"
@@ -160,15 +205,18 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
           >
             REGISTER / JOIN →
           </a>
-        ) : (
-          <Link
-            href="/contact"
-            className="block w-full text-center font-mono text-[0.65rem] tracking-[0.15em] py-2.5 rounded-sm border transition-all duration-200 hover:brightness-125"
-            style={{ color, borderColor: `${color}50`, background: bg }}
-          >
-            RSVP / ENQUIRE →
-          </Link>
         )}
+
+        {/* Calendar actions */}
+        <a
+          href={makeGoogleCalUrl(event)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 font-mono text-[0.6rem] tracking-wider py-2 w-full rounded-sm border border-white/10 text-silver/50 hover:border-electric-cyan/40 hover:text-electric-cyan transition-all duration-200"
+        >
+          <CalendarPlus className="w-3 h-3" />
+          GOOGLE CAL
+        </a>
       </div>
     </motion.div>
   );

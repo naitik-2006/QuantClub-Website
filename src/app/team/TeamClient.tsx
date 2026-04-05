@@ -15,9 +15,11 @@ interface Member {
   github?: string;
   linkedin?: string;
   email?: string;
-  image?: string;      // URL or /team/photo.jpg path
+  image?: string;
   gradient: string;
   section: string;
+  order?: number;
+  sectionOrder?: number;
 }
 
 /* ─── MemberCard ─── */
@@ -40,13 +42,14 @@ function MemberCard({ member, delay = 0 }: { member: Member; delay?: number }) {
         <div className="absolute inset-0 grid-bg opacity-20" />
 
         {member.image ? (
-          /* Real photo */
+          /* Real photo — works with any direct URL (Cloudinary, /public, etc.) */
           <Image
             src={member.image}
             alt={member.name}
             fill
             className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized={member.image.startsWith('http')}
           />
         ) : (
           /* Initials fallback */
@@ -54,7 +57,6 @@ function MemberCard({ member, delay = 0 }: { member: Member; delay?: number }) {
             <span className="font-mono text-6xl font-black text-white/[0.08] select-none tracking-widest">
               {initials}
             </span>
-            {/* Subtle person icon */}
             <User className="absolute w-14 h-14 text-white/10" />
           </div>
         )}
@@ -63,7 +65,7 @@ function MemberCard({ member, delay = 0 }: { member: Member; delay?: number }) {
         <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-electric-cyan animate-pulse" />
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-electric-cyan/0 group-hover:bg-electric-cyan/[0.04] transition-all duration-500" />
-        {/* Bottom fade into card body */}
+        {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#0D0D0D] to-transparent" />
       </div>
 
@@ -85,40 +87,26 @@ function MemberCard({ member, delay = 0 }: { member: Member; delay?: number }) {
           ))}
         </div>
 
-        {/* Social links — pushed to bottom */}
+        {/* Social links */}
         <div className="flex items-center gap-2 pt-2 border-t border-white/5 mt-auto">
-          {member.linkedin && member.linkedin !== '#' && (
-            <a
-              href={member.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              className="w-7 h-7 border border-white/10 rounded flex items-center justify-center text-silver/35 hover:border-electric-cyan/50 hover:text-electric-cyan transition-all duration-200"
-            >
+          {member.linkedin && (
+            <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+              className="w-7 h-7 border border-white/10 rounded flex items-center justify-center text-silver/35 hover:border-electric-cyan/50 hover:text-electric-cyan transition-all duration-200">
               <Linkedin className="w-3 h-3" />
             </a>
           )}
-          {member.github && member.github !== '#' && (
-            <a
-              href={member.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-              className="w-7 h-7 border border-white/10 rounded flex items-center justify-center text-silver/35 hover:border-electric-cyan/50 hover:text-electric-cyan transition-all duration-200"
-            >
+          {member.github && (
+            <a href={member.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub"
+              className="w-7 h-7 border border-white/10 rounded flex items-center justify-center text-silver/35 hover:border-electric-cyan/50 hover:text-electric-cyan transition-all duration-200">
               <Github className="w-3 h-3" />
             </a>
           )}
-          {member.email && member.email !== '#' && (
-            <a
-              href={`mailto:${member.email}`}
-              aria-label="Email"
-              className="w-7 h-7 border border-white/10 rounded flex items-center justify-center text-silver/35 hover:border-electric-cyan/50 hover:text-electric-cyan transition-all duration-200"
-            >
+          {member.email && (
+            <a href={`mailto:${member.email}`} aria-label="Email"
+              className="w-7 h-7 border border-white/10 rounded flex items-center justify-center text-silver/35 hover:border-electric-cyan/50 hover:text-electric-cyan transition-all duration-200">
               <Mail className="w-3 h-3" />
             </a>
           )}
-          {/* empty state */}
           {!member.linkedin && !member.github && !member.email && (
             <span className="text-[0.6rem] font-mono text-white/15 tracking-widest">IIT BHU</span>
           )}
@@ -149,20 +137,32 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
 
 /* ─── Page ─── */
 export default function TeamClient({ initialMembers }: { initialMembers: Member[] }) {
-  const membersData = Array.isArray(initialMembers) ? initialMembers : 
+  const membersData = Array.isArray(initialMembers) ? initialMembers :
                       typeof initialMembers === 'string' ? JSON.parse(initialMembers) : [];
   const [members] = useState<Member[]>(membersData);
-  const loading = false;
 
-  // Group members by section — preserve insertion order
-  const sectionsMap = (Array.isArray(members) ? members : []).reduce((acc, member) => {
-    const s = member.section || 'OTHER';
-    if (!acc[s]) acc[s] = [];
-    acc[s].push(member);
-    return acc;
-  }, {} as Record<string, Member[]>);
+  // ── Two-level sort: sectionOrder → section block, order → member within section
+  const sectionsMap: Record<string, { sectionOrder: number; members: Member[] }> = {};
+  for (const m of (Array.isArray(members) ? members : [])) {
+    if (!sectionsMap[m.section]) {
+      sectionsMap[m.section] = { sectionOrder: m.sectionOrder ?? 99, members: [] };
+    }
+    sectionsMap[m.section].members.push(m);
+    // The lowest sectionOrder value in the group wins (guard against inconsistent data)
+    sectionsMap[m.section].sectionOrder = Math.min(
+      sectionsMap[m.section].sectionOrder,
+      m.sectionOrder ?? 99
+    );
+  }
 
-  const sections = Object.keys(sectionsMap);
+  const sections = Object.entries(sectionsMap)
+    .sort(([, a], [, b]) => a.sectionOrder - b.sectionOrder)
+    .map(([name, { members: mems }]) => ({
+      name,
+      members: [...mems].sort((a, b) => (a.order ?? 99) - (b.order ?? 99)),
+    }));
+
+  const totalMembers = members.length;
 
   return (
     <div className="min-h-screen pt-24 pb-28 px-5 sm:px-6">
@@ -185,8 +185,7 @@ export default function TeamClient({ initialMembers }: { initialMembers: Member[
             by a drive to decode markets and build exceptional quantitative systems.
           </p>
 
-          {/* Stats row */}
-          {members.length > 0 && (
+          {totalMembers > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -194,7 +193,7 @@ export default function TeamClient({ initialMembers }: { initialMembers: Member[
               className="flex flex-wrap gap-8 pt-2"
             >
               <div className="flex items-baseline gap-2">
-                <span className="font-black text-3xl text-electric-cyan">{members.length}</span>
+                <span className="font-black text-3xl text-electric-cyan">{totalMembers}</span>
                 <span className="font-mono text-[0.6rem] tracking-[0.2em] text-white/30">MEMBERS</span>
               </div>
               <div className="flex items-baseline gap-2">
@@ -205,28 +204,19 @@ export default function TeamClient({ initialMembers }: { initialMembers: Member[
           )}
         </motion.div>
 
-        {/* ── Loading skeleton ── */}
-        {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="glass-card rounded-sm h-72 animate-pulse" />
-            ))}
-          </div>
-        )}
-
         {/* ── Dynamic Sections ── */}
-        {!loading && sections.map((section) => (
-          <section key={section} className="space-y-0">
-            <SectionHeader title={section} count={sectionsMap[section].length} />
+        {sections.map((section) => (
+          <section key={section.name} className="space-y-0">
+            <SectionHeader title={section.name} count={section.members.length} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5">
-              {sectionsMap[section].map((m, i) => (
+              {section.members.map((m, i) => (
                 <MemberCard key={m.id} member={m} delay={i * 0.08} />
               ))}
             </div>
           </section>
         ))}
 
-        {!loading && sections.length === 0 && (
+        {sections.length === 0 && (
           <div className="text-center py-24">
             <p className="text-silver/40 font-mono text-sm tracking-wider">No team members currently listed.</p>
             <p className="text-silver/25 font-mono text-xs tracking-wider mt-2">Admins can add members via the admin panel.</p>

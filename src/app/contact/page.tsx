@@ -184,11 +184,25 @@ export default function ContactPage() {
   const formView = useInView(formRef, { once: true, margin: '-60px' });
   const infoView = useInView(infoRef, { once: true, margin: '-60px' });
 
+  const [honeypot, setHoneypot] = useState('');
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setStatus('loading');
-    await new Promise(r => setTimeout(r, 1400));
-    setStatus('success');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message, honeypot }),
+      });
+      if (res.ok) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+      }
+    } catch {
+      setStatus('error');
+    }
   };
 
   return (
@@ -259,6 +273,17 @@ export default function ContactPage() {
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-7">
+                {/* Honeypot — hidden from real users, bots will fill it */}
+                <input
+                  type="text"
+                  name="honeypot"
+                  value={honeypot}
+                  onChange={e => setHoneypot(e.target.value)}
+                  style={{ display: 'none' }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                   <FloatingInput id="name"  label="YOUR NAME"      value={name}  onChange={setName}  required />
                   <FloatingInput id="email" label="STUDENT EMAIL"  type="email" value={email} onChange={setEmail} required />

@@ -8,7 +8,8 @@
     "deadline": "AUG 2025",
     "tags": ["MARKET MAKING", "STREET-READY", "C++"],
     "description": "Work alongside experienced traders to solve complex problems in a fast-paced environment. Competitive compensation and deep learning curve.",
-    "href": "https://www.janestreet.com/join-jane-street/position/quantitative-trader-internship/"
+    "href": "https://www.janestreet.com/join-jane-street/position/quantitative-trader-internship/",
+    "order": 0
   },
   {
     "id": "citadel-research",
@@ -18,7 +19,8 @@
     "location": "Miami / London / APAC",
     "tags": ["RESEARCH", "MACHINE LEARNING", "STATISTICS"],
     "description": "Build predictive models and high-performance trading strategies using massive datasets and cutting-edge technology.",
-    "href": "https://www.citadelsecurities.com/careers/positions/quantitative-researcher/"
+    "href": "https://www.citadelsecurities.com/careers/positions/quantitative-researcher/",
+    "order": 1
   },
   {
     "id": "world-quant-challenge",
@@ -29,6 +31,7 @@
     "deadline": "MAY 2025",
     "tags": ["ALPHAS", "VRC", "PRIZE POOL"],
     "description": "A global competition to build the best predictive signals (alphas). Top performers gain access to consulting roles.",
-    "href": "https://www.worldquant.com/challenge/"
+    "href": "https://www.worldquant.com/challenge/",
+    "order": 2
   }
 ]

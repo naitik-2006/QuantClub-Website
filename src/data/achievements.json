@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": "3rd Place – Inter IIT Patna",
+    "rank": "3rd",
+    "subtitle": "INTER IIT PATNA",
+    "description": "Secured third place competing against top IIT teams in quantitative finance challenges.",
+    "order": 0,
+    "icon": "Medal",
+    "color": "#CD7F32",
+    "glow": "rgba(205,127,50,0.15)",
+    "gradient": "from-orange-500/20 via-amber-600/10 to-transparent"
+  },
+  {
+    "id": 2,
+    "title": "10 WorldQuant Research Scholars",
+    "rank": "10",
+    "subtitle": "WORLDQUANT SCHOLARS",
+    "description": "Ten members selected for prestigious WorldQuant Research Scholar program showcasing strong research skills.",
+    "order": 1,
+    "icon": "Crown",
+    "color": "#FFD700",
+    "glow": "rgba(255,215,0,0.15)",
+    "gradient": "from-yellow-500/20 via-amber-500/10 to-transparent"
+  },
+  {
+    "id": 3,
+    "title": "2 IICPC Quantfest Finalists",
+    "rank": "Top",
+    "subtitle": "IICPC QUANTFEST",
+    "description": "Two teams reached finals among 75 nationwide selected candidates in a competitive quantitative finance and algorithmic trading competition.",
+    "order": 2,
+    "icon": "Trophy",
+    "color": "#00FFFF",
+    "glow": "rgba(0,255,255,0.15)",
+    "gradient": "from-cyan-500/20 via-teal-500/10 to-transparent"
+  },
+  {
+    "id": 4,
+    "title": "3rd Place – QuantConnect League",
+    "rank": "3rd",
+    "subtitle": "QUANTCONNECT LEAGUE",
+    "description": "Achieved third place in global QuantConnect league through algorithmic trading strategies.",
+    "order": 3,
+    "icon": "LineChart",
+    "color": "#A78BFA",
+    "glow": "rgba(167,139,250,0.15)",
+    "gradient": "from-violet-500/20 via-purple-500/10 to-transparent"
+  },
+  {
+    "id": 5,
+    "title": "4 Integral Cup Regionals",
+    "rank": "4",
+    "subtitle": "INTEGRAL CUP REGIONALS",
+    "description": "Four members from the club qualified for the Integral Cup Regional rounds in competitive mathematics.",
+    "order": 4,
+    "icon": "Award",
+    "color": "#34D399",
+    "glow": "rgba(52,211,153,0.15)",
+    "gradient": "from-emerald-500/20 via-green-500/10 to-transparent"
+  }
+]
