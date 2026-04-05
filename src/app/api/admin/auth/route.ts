@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { getAdminToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
@@ -8,8 +7,8 @@ export async function POST(request: Request) {
     const adminPassword = process.env.ADMIN_PASSWORD || 'quantclub2026';
     
     if (password === adminPassword) {
-      // Set the secure, HTTP-Only cookie to track the admin session
-      cookies().set({
+      const response = NextResponse.json({ success: true });
+      response.cookies.set({
         name: 'admin_token',
         value: getAdminToken(password),
         httpOnly: true,
@@ -18,8 +17,7 @@ export async function POST(request: Request) {
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 1 week
       });
-      
-      return NextResponse.json({ success: true });
+      return response;
     }
     
     return NextResponse.json(
@@ -34,8 +32,8 @@ export async function POST(request: Request) {
   }
 }
 
-// Add a logout route while we are at it
 export async function DELETE() {
-  cookies().delete('admin_token');
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  response.cookies.delete('admin_token');
+  return response;
 }

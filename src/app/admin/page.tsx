@@ -90,48 +90,51 @@ export default function AdminDashboard() {
 
   const showMsg = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3000); };
 
-  // Handlers
+  // Authenticated Handlers
+  const safeFetch = async (url: string, method: string, body?: any) => {
+    const res = await fetch(url, {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (res.status === 401) { setAuthenticated(false); throw new Error('Unauthorized'); }
+    if (!res.ok) throw new Error('Request failed');
+    return res;
+  };
+
   const addEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/admin/events', { method: 'POST', body: JSON.stringify(newEvent) });
-    fetchData(); showMsg('Event added.');
+    try { await safeFetch('/api/admin/events', 'POST', newEvent); fetchData(); showMsg('Event added.'); } catch { showMsg('Failed to add event.'); }
   };
   const delEvent = async (id: number) => {
-    await fetch(`/api/admin/events?id=${id}`, { method: 'DELETE' });
-    fetchData(); showMsg('Event deleted.');
+    try { await safeFetch(`/api/admin/events?id=${id}`, 'DELETE'); fetchData(); showMsg('Event deleted.'); } catch { showMsg('Failed to delete event.'); }
   };
   
   const addResource = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = { ...newResource, tags: newResource.tags.split(',').map(t=>t.trim()) };
-    await fetch('/api/admin/resources', { method: 'POST', body: JSON.stringify(payload) });
-    fetchData(); showMsg('Resource added.');
+    try { await safeFetch('/api/admin/resources', 'POST', payload); fetchData(); showMsg('Resource added.'); } catch { showMsg('Failed to add resource.'); }
   };
   const delResource = async (id: string) => {
-    await fetch(`/api/admin/resources?id=${id}`, { method: 'DELETE' });
-    fetchData(); showMsg('Resource deleted.');
+    try { await safeFetch(`/api/admin/resources?id=${id}`, 'DELETE'); fetchData(); showMsg('Resource deleted.'); } catch { showMsg('Failed to delete resource.'); }
   };
 
   const addMember = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = { ...newMember, tags: newMember.tags.split(',').map(t=>t.trim()) };
-    await fetch('/api/admin/team', { method: 'POST', body: JSON.stringify(payload) });
-    fetchData(); showMsg('Team member added.');
+    try { await safeFetch('/api/admin/team', 'POST', payload); fetchData(); showMsg('Team member added.'); } catch { showMsg('Failed to add member.'); }
   };
   const delMember = async (id: number) => {
-    await fetch(`/api/admin/team?id=${id}`, { method: 'DELETE' });
-    fetchData(); showMsg('Team member deleted.');
+    try { await safeFetch(`/api/admin/team?id=${id}`, 'DELETE'); fetchData(); showMsg('Team member deleted.'); } catch { showMsg('Failed to delete member.'); }
   };
 
   const addOpp = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = { ...newOpp, tags: newOpp.tags.split(',').map(t=>t.trim()) };
-    await fetch('/api/admin/opportunities', { method: 'POST', body: JSON.stringify(payload) });
-    fetchData(); showMsg('Opportunity added.');
+    try { await safeFetch('/api/admin/opportunities', 'POST', payload); fetchData(); showMsg('Opportunity added.'); } catch { showMsg('Failed to add opportunity.'); }
   };
   const delOpp = async (id: string) => {
-    await fetch(`/api/admin/opportunities?id=${id}`, { method: 'DELETE' });
-    fetchData(); showMsg('Opportunity deleted.');
+    try { await safeFetch(`/api/admin/opportunities?id=${id}`, 'DELETE'); fetchData(); showMsg('Opportunity deleted.'); } catch { showMsg('Failed to delete opportunity.'); }
   };
 
   const handleBackup = async () => {
