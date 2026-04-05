@@ -11,7 +11,6 @@ async function kvGet<T>(key: string): Promise<T | null> {
 
   const res = await fetch(`${url}/get/${key}`, {
     headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
   });
   const json = await res.json();
   if (json.result === null || json.result === undefined) return null;
@@ -30,7 +29,6 @@ async function kvSet<T>(key: string, data: T): Promise<void> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(JSON.stringify(data)), // double-stringify: outer is fetch body, inner is stored value
-    cache: 'no-store',
   });
 }
 
