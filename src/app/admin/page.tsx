@@ -172,7 +172,13 @@ export default function AdminDashboard() {
             <p className="font-mono text-[0.6rem] tracking-[0.2em] text-silver/40">DATA MANAGEMENT</p>
           </div>
         </div>
-        <button onClick={() => setAuthenticated(false)} className="flex items-center gap-2 font-mono text-xs text-red-400/80 hover:text-red-400 transition-colors">
+        <button 
+          onClick={async () => {
+            await fetch('/api/admin/auth', { method: 'DELETE' });
+            setAuthenticated(false);
+          }} 
+          className="flex items-center gap-2 font-mono text-xs text-red-400/80 hover:text-red-400 transition-colors"
+        >
           <LogOut className="w-3.5 h-3.5" /> LOGOUT
         </button>
       </div>

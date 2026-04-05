@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { readJSON, writeJSON } from '@/lib/db';
+import { revalidateTag } from 'next/cache';
+import { verifyAdmin } from '@/lib/auth';
 
 export async function GET() {
   try {
-    const events = readJSON('events.json', []);
-    const resources = readJSON('resources.json', []);
-    const team = readJSON('team.json', []);
-    const opportunities = readJSON('opportunities.json', []);
+    const events = await readJSON('events.json', []);
+    const resources = await readJSON('resources.json', []);
+    const team = await readJSON('team.json', []);
+    const opportunities = await readJSON('opportunities.json', []);
     
     const backup = {
       timestamp: new Date().toISOString(),
@@ -26,6 +28,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!verifyAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const backup = await request.json();
     
@@ -36,10 +40,15 @@ export async function POST(request: Request) {
       );
     }
     
-    writeJSON('events.json', backup.events);
-    writeJSON('resources.json', backup.resources);
-    writeJSON('team.json', backup.team);
-    writeJSON('opportunities.json', backup.opportunities);
+    await writeJSON('events.json', backup.events);
+    await writeJSON('resources.json', backup.resources);
+    await writeJSON('team.json', backup.team);
+    await writeJSON('opportunities.json', backup.opportunities);
+    
+    revalidateTag('events');
+    revalidateTag('resources');
+    revalidateTag('team');
+    revalidateTag('opportunities');
     
     return NextResponse.json({ success: true });
   } catch (error) {

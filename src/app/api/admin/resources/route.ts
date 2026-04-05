@@ -1,23 +1,27 @@
 import { NextResponse } from 'next/server';
 import { readJSON, writeJSON } from '@/lib/db';
-import type { Resource } from '@/data/resources';
+import { revalidateTag } from 'next/cache';
+import { verifyAdmin } from '@/lib/auth';
 
 export async function GET() {
-  const resources = readJSON<Resource[]>('resources.json', []);
+  const resources = await readJSON<any[]>('resources.json', []);
   return NextResponse.json(resources);
 }
 
 export async function POST(request: Request) {
+  if (!verifyAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const newResource = await request.json();
-    const resources = readJSON<Resource[]>('resources.json', []);
+    const resources = await readJSON<any[]>('resources.json', []);
     
     if (!newResource.id) {
       newResource.id = 'admin-' + Date.now();
     }
     
     resources.push(newResource);
-    writeJSON('resources.json', resources);
+    await writeJSON('resources.json', resources);
+    revalidateTag('resources');
     
     return NextResponse.json(newResource);
   } catch (error) {
@@ -29,6 +33,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!verifyAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -37,9 +43,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
     
-    const resources = readJSON<Resource[]>('resources.json', []);
+    const resources = await readJSON<any[]>('resources.json', []);
     const updated = resources.filter(r => r.id !== id);
-    writeJSON('resources.json', updated);
+    await writeJSON('resources.json', updated);
+    revalidateTag('resources');
     
     return NextResponse.json({ success: true });
   } catch (error) {

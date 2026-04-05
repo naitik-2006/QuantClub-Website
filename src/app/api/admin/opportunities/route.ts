@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
 import { readJSON, writeJSON } from '@/lib/db';
+import { revalidateTag } from 'next/cache';
+import { verifyAdmin } from '@/lib/auth';
 
 export async function GET() {
-  const opps = readJSON('opportunities.json', []);
-  return NextResponse.json(opps);
+  const opportunities = await readJSON<any[]>('opportunities.json', []);
+  return NextResponse.json(opportunities);
 }
 
 export async function POST(request: Request) {
+  if (!verifyAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const newOpp = await request.json();
-    const opps = readJSON<any[]>('opportunities.json', []);
+    const opportunities = await readJSON<any[]>('opportunities.json', []);
     
     if (!newOpp.id) {
       newOpp.id = 'opp-' + Date.now();
     }
     
-    opps.push(newOpp);
-    writeJSON('opportunities.json', opps);
+    opportunities.push(newOpp);
+    await writeJSON('opportunities.json', opportunities);
+    revalidateTag('opportunities');
     
     return NextResponse.json(newOpp);
   } catch (error) {
@@ -28,6 +33,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!verifyAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -36,9 +43,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
     
-    const opps = readJSON<any[]>('opportunities.json', []);
-    const updated = opps.filter(o => o.id !== id);
-    writeJSON('opportunities.json', updated);
+    const opportunities = await readJSON<any[]>('opportunities.json', []);
+    const updated = opportunities.filter(o => o.id !== id);
+    await writeJSON('opportunities.json', updated);
+    revalidateTag('opportunities');
     
     return NextResponse.json({ success: true });
   } catch (error) {
