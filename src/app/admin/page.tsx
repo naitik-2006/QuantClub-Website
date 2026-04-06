@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, LogOut, Calendar as CalendarIcon, BookOpen, Download, Upload, Trash2, CheckCircle2, Users, Briefcase, Trophy, BarChart, MessageSquare, GripVertical } from 'lucide-react';
+import { Lock, LogOut, Calendar as CalendarIcon, BookOpen, Download, Upload, Trash2, Pencil, X, CheckCircle2, Users, Briefcase, Trophy, BarChart, MessageSquare, GripVertical } from 'lucide-react';
 
 function AdminLogin({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
@@ -37,6 +37,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'team' | 'events' | 'resources' | 'opportunities' | 'achievements' | 'projects' | 'messages' | 'backup'>('team');
   const [msg, setMsg] = useState('');
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | number | null>(null);
 
   // Data
   const [events, setEvents] = useState<any[]>([]);
@@ -118,21 +119,83 @@ export default function AdminDashboard() {
     return copy;
   };
 
-  // Add Handlers
-  const addEvent = async (e: React.FormEvent) => { e.preventDefault(); try { await safeFetch('/api/admin/events', 'POST', newEvent); fetchData(); showMsg('Event added.'); setNewEvent(initEvent); } catch { showMsg('Failed.'); } };
-  const addResource = async (e: React.FormEvent) => { e.preventDefault(); try { await safeFetch('/api/admin/resources', 'POST', { ...newResource, tags: newResource.tags.split(',').map(t=>t.trim()) }); fetchData(); showMsg('Resource added.'); setNewResource(initRes); } catch { showMsg('Failed.'); } };
+  // Add/Edit Handlers
+  const addEvent = async (e: React.FormEvent) => { 
+    e.preventDefault(); 
+    try { 
+      const method = editingId ? 'PUT' : 'POST';
+      await safeFetch('/api/admin/events', method, editingId ? { ...newEvent, id: editingId } : newEvent); 
+      fetchData(); showMsg(editingId ? 'Event updated.' : 'Event added.'); setNewEvent(initEvent); setEditingId(null);
+    } catch { showMsg('Failed.'); } 
+  };
+
+  const addResource = async (e: React.FormEvent) => { 
+    e.preventDefault(); 
+    try { 
+      const method = editingId ? 'PUT' : 'POST';
+      const tags = typeof newResource.tags === 'string' ? newResource.tags.split(',').map(t=>t.trim()) : newResource.tags;
+      await safeFetch('/api/admin/resources', method, { ...newResource, id: editingId || undefined, tags }); 
+      fetchData(); showMsg(editingId ? 'Resource updated.' : 'Resource added.'); setNewResource(initRes); setEditingId(null);
+    } catch { showMsg('Failed.'); } 
+  };
+
   const addMember = async (e: React.FormEvent) => { 
     e.preventDefault(); 
     try { 
       let imageUrl = newMember.image;
       if (memberImageFile) { showMsg('Uploading...'); imageUrl = await uploadFile(memberImageFile); }
-      await safeFetch('/api/admin/team', 'POST', { ...newMember, image: imageUrl, tags: newMember.tags.split(',').map(t=>t.trim()) }); 
-      fetchData(); showMsg('Member added.'); setNewMember(initMem); setMemberImageFile(null);
+      const method = editingId ? 'PUT' : 'POST';
+      const tags = typeof newMember.tags === 'string' ? newMember.tags.split(',').map(t=>t.trim()) : newMember.tags;
+      await safeFetch('/api/admin/team', method, { ...newMember, id: editingId || undefined, image: imageUrl, tags }); 
+      fetchData(); showMsg(editingId ? 'Member updated.' : 'Member added.'); setNewMember(initMem); setMemberImageFile(null); setEditingId(null);
     } catch { showMsg('Failed.'); } 
   };
-  const addOpp = async (e: React.FormEvent) => { e.preventDefault(); try { await safeFetch('/api/admin/opportunities', 'POST', { ...newOpp, tags: newOpp.tags.split(',').map(t=>t.trim()) }); fetchData(); showMsg('Opportunity added.'); setNewOpp(initOpp); } catch { showMsg('Failed.'); } };
-  const addAch = async (e: React.FormEvent) => { e.preventDefault(); try { await safeFetch('/api/admin/achievements', 'POST', newAch); fetchData(); showMsg('Achievement Added.'); setNewAch(initAch); } catch { showMsg('Failed.'); } };
-  const addProj = async (e: React.FormEvent) => { e.preventDefault(); try { await safeFetch('/api/admin/projects', 'POST', {...newProj, tags: newProj.tags.split(',').map(t=>t.trim())}); fetchData(); showMsg('Project Added.'); setNewProj(initProj); } catch { showMsg('Failed.'); } };
+
+  const addOpp = async (e: React.FormEvent) => { 
+    e.preventDefault(); 
+    try { 
+      const method = editingId ? 'PUT' : 'POST';
+      const tags = typeof newOpp.tags === 'string' ? newOpp.tags.split(',').map(t=>t.trim()) : newOpp.tags;
+      await safeFetch('/api/admin/opportunities', method, { ...newOpp, id: editingId || undefined, tags }); 
+      fetchData(); showMsg(editingId ? 'Opportunity updated.' : 'Opportunity added.'); setNewOpp(initOpp); setEditingId(null);
+    } catch { showMsg('Failed.'); } 
+  };
+
+  const addAch = async (e: React.FormEvent) => { 
+    e.preventDefault(); 
+    try { 
+      const method = editingId ? 'PUT' : 'POST';
+      await safeFetch('/api/admin/achievements', method, { ...newAch, id: editingId || undefined }); 
+      fetchData(); showMsg(editingId ? 'Achievement updated.' : 'Achievement Added.'); setNewAch(initAch); setEditingId(null);
+    } catch { showMsg('Failed.'); } 
+  };
+
+  const addProj = async (e: React.FormEvent) => { 
+    e.preventDefault(); 
+    try { 
+      const method = editingId ? 'PUT' : 'POST';
+      const tags = typeof newProj.tags === 'string' ? newProj.tags.split(',').map(t=>t.trim()) : newProj.tags;
+      await safeFetch('/api/admin/projects', method, { ...newProj, id: editingId || undefined, tags }); 
+      fetchData(); showMsg(editingId ? 'Project updated.' : 'Project Added.'); setNewProj(initProj); setEditingId(null);
+    } catch { showMsg('Failed.'); } 
+  };
+
+  const startEdit = (category: string, item: any) => {
+    setEditingId(item.id);
+    const tagsStr = Array.isArray(item.tags) ? item.tags.join(', ') : item.tags;
+    if (category === 'team') { setNewMember({ ...item, tags: tagsStr }); setActiveTab('team'); }
+    if (category === 'achievements') { setNewAch({ ...item }); setActiveTab('achievements'); }
+    if (category === 'projects') { setNewProj({ ...item, tags: tagsStr }); setActiveTab('projects'); }
+    if (category === 'events') { setNewEvent({ ...item }); setActiveTab('events'); }
+    if (category === 'resources') { setNewResource({ ...item, tags: tagsStr }); setActiveTab('resources'); }
+    if (category === 'opportunities') { setNewOpp({ ...item, tags: tagsStr }); setActiveTab('opportunities'); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setNewMember(initMem); setNewEvent(initEvent); setNewAch(initAch); setNewProj(initProj); setNewResource(initRes); setNewOpp(initOpp);
+  };
 
   if (!authenticated) return <AdminLogin onLogin={() => setAuthenticated(true)} />;
 
@@ -171,7 +234,7 @@ export default function AdminDashboard() {
           {activeTab === 'team' && (
             <div className="space-y-8">
               <div>
-                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">ADD TEAM MEMBER</h3>
+                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">{editingId ? 'EDIT' : 'ADD'} TEAM MEMBER</h3>
                 <form onSubmit={addMember} className="grid grid-cols-2 gap-4">
                   <input required placeholder="Name" value={newMember.name} onChange={e=>setNewMember({...newMember, name: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input required placeholder="Role (e.g. ML LEAD)" value={newMember.role} onChange={e=>setNewMember({...newMember, role: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
@@ -184,7 +247,10 @@ export default function AdminDashboard() {
                   <input placeholder="LinkedIn URL (optional)" value={newMember.linkedin} onChange={e=>setNewMember({...newMember, linkedin: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input placeholder="GitHub URL (optional)" value={newMember.github} onChange={e=>setNewMember({...newMember, github: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input placeholder="Email (optional)" value={newMember.email} onChange={e=>setNewMember({...newMember, email: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
-                  <button type="submit" className="col-span-2 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">ADD MEMBER</button>
+                  <div className="col-span-2 flex gap-2">
+                    <button type="submit" className="flex-1 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">{editingId ? 'UPDATE' : 'ADD'} MEMBER</button>
+                    {editingId && <button type="button" onClick={cancelEdit} className="px-4 bg-white/5 border border-white/10 text-white rounded hover:bg-white/10"><X className="w-4 h-4" /></button>}
+                  </div>
                 </form>
               </div>
 
@@ -214,7 +280,10 @@ export default function AdminDashboard() {
                         <GripVertical className="text-silver/50" />
                         <div><p className="text-sm font-semibold">{m.name} <span className="text-silver/50 text-xs text-electric-cyan">({m.section})</span></p><p className="text-xs text-silver/50">{m.role}</p></div>
                       </div>
-                      <button onClick={async ()=>{ await safeFetch(`/api/admin/team?id=${m.id}`, 'DELETE'); fetchData(); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <div className="flex gap-1">
+                        <button onClick={() => startEdit('team', m)} className="text-electric-cyan p-2 hover:bg-electric-cyan/10 rounded"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={async ()=>{ await safeFetch(`/api/admin/team?id=${m.id}`, 'DELETE'); fetchData(); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </div>
                   ))}
                   {team.length === 0 && <p className="text-xs text-silver/40">No members found.</p>}
@@ -227,7 +296,7 @@ export default function AdminDashboard() {
           {activeTab === 'achievements' && (
             <div className="space-y-8">
               <div>
-                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">ADD ACHIEVEMENT</h3>
+                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">{editingId ? 'EDIT' : 'ADD'} ACHIEVEMENT</h3>
                 <form onSubmit={addAch} className="grid grid-cols-2 gap-4">
                   <input required placeholder="Title" value={newAch.title} onChange={e=>setNewAch({...newAch, title: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input required placeholder="Rank (e.g. #3)" value={newAch.rank} onChange={e=>setNewAch({...newAch, rank: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
@@ -235,7 +304,10 @@ export default function AdminDashboard() {
                   <input placeholder="Project link (optional)" value={newAch.href} onChange={e=>setNewAch({...newAch, href: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input placeholder="GitHub link (optional)" value={newAch.github} onChange={e=>setNewAch({...newAch, github: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <textarea required placeholder="Description" rows={3} value={newAch.description} onChange={e=>setNewAch({...newAch, description: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white resize-none" />
-                  <button type="submit" className="col-span-2 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">ADD ACHIEVEMENT</button>
+                  <div className="col-span-2 flex gap-2">
+                    <button type="submit" className="flex-1 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">{editingId ? 'UPDATE' : 'ADD'} ACHIEVEMENT</button>
+                    {editingId && <button type="button" onClick={cancelEdit} className="px-4 bg-white/5 border border-white/10 text-white rounded hover:bg-white/10"><X className="w-4 h-4" /></button>}
+                  </div>
                 </form>
               </div>
               <div>
@@ -246,7 +318,10 @@ export default function AdminDashboard() {
                   {achievements.map((item, idx) => (
                     <div key={item.id} draggable onDragStart={() => setDraggedIdx(idx)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (draggedIdx !== null) { setAchievements(handleDragSort(achievements, achievements[draggedIdx].id, item.id)); setDraggedIdx(null); } }} className="flex justify-between items-center bg-white/[0.02] border border-white/[0.05] p-3 rounded cursor-move hover:border-white/20">
                       <div className="flex gap-3 items-center"><GripVertical className="text-silver/50" /><p className="text-sm font-semibold">{item.title}</p></div>
-                      <button onClick={async ()=>{ await safeFetch(`/api/admin/achievements?id=${item.id}`, 'DELETE'); fetchData(); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <div className="flex gap-1">
+                        <button onClick={() => startEdit('achievements', item)} className="text-electric-cyan p-2 hover:bg-electric-cyan/10 rounded"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={async ()=>{ await safeFetch(`/api/admin/achievements?id=${item.id}`, 'DELETE'); fetchData(); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -258,7 +333,7 @@ export default function AdminDashboard() {
           {activeTab === 'projects' && (
             <div className="space-y-8">
               <div>
-                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">ADD PROJECT</h3>
+                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">{editingId ? 'EDIT' : 'ADD'} PROJECT</h3>
                 <form onSubmit={addProj} className="grid grid-cols-2 gap-4">
                   <input required placeholder="Title" value={newProj.title} onChange={e=>setNewProj({...newProj, title: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <textarea required placeholder="Description" rows={3} value={newProj.description} onChange={e=>setNewProj({...newProj, description: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white resize-none" />
@@ -266,7 +341,10 @@ export default function AdminDashboard() {
                   <input required placeholder="Icon Name" value={newProj.icon} onChange={e=>setNewProj({...newProj, icon: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input placeholder="Project Link (optional)" value={newProj.href} onChange={e=>setNewProj({...newProj, href: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input placeholder="GitHub Link (optional)" value={newProj.github} onChange={e=>setNewProj({...newProj, github: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
-                  <button type="submit" className="col-span-2 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">ADD PROJECT</button>
+                  <div className="col-span-2 flex gap-2">
+                    <button type="submit" className="flex-1 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">{editingId ? 'UPDATE' : 'ADD'} PROJECT</button>
+                    {editingId && <button type="button" onClick={cancelEdit} className="px-4 bg-white/5 border border-white/10 text-white rounded hover:bg-white/10"><X className="w-4 h-4" /></button>}
+                  </div>
                 </form>
               </div>
               <div>
@@ -277,7 +355,10 @@ export default function AdminDashboard() {
                   {projects.map((item, idx) => (
                     <div key={item.id} draggable onDragStart={() => setDraggedIdx(idx)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (draggedIdx !== null) { setProjects(handleDragSort(projects, projects[draggedIdx].id, item.id)); setDraggedIdx(null); } }} className="flex justify-between items-center bg-white/[0.02] border border-white/[0.05] p-3 rounded cursor-move hover:border-white/20">
                       <div className="flex gap-3 items-center"><GripVertical className="text-silver/50" /><p className="text-sm font-semibold">{item.title}</p></div>
-                      <button onClick={async ()=>{ await safeFetch(`/api/admin/projects?id=${item.id}`, 'DELETE'); fetchData(); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <div className="flex gap-1">
+                        <button onClick={() => startEdit('projects', item)} className="text-electric-cyan p-2 hover:bg-electric-cyan/10 rounded"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={async ()=>{ await safeFetch(`/api/admin/projects?id=${item.id}`, 'DELETE'); fetchData(); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -311,7 +392,7 @@ export default function AdminDashboard() {
           {activeTab === 'events' && (
             <div className="space-y-8">
               <div>
-                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">ADD NEW EVENT</h3>
+                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">{editingId ? 'EDIT' : 'ADD'} EVENT</h3>
                 <form onSubmit={addEvent} className="grid grid-cols-2 gap-4">
                   <input required placeholder="Title" value={newEvent.title} onChange={e=>setNewEvent({...newEvent, title: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input required placeholder="Year" type="number" value={newEvent.year} onChange={e=>setNewEvent({...newEvent, year: parseInt(e.target.value)})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
@@ -322,7 +403,10 @@ export default function AdminDashboard() {
                   <select value={newEvent.format} onChange={e=>setNewEvent({...newEvent, format: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white"><option>IN-PERSON</option><option>VIRTUAL</option></select>
                   <input required placeholder="Location" value={newEvent.location} onChange={e=>setNewEvent({...newEvent, location: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <textarea required placeholder="Description" rows={3} value={newEvent.description} onChange={e=>setNewEvent({...newEvent, description: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white resize-none" />
-                  <button type="submit" className="col-span-2 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">ADD EVENT</button>
+                  <div className="col-span-2 flex gap-2">
+                    <button type="submit" className="flex-1 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">{editingId ? 'UPDATE' : 'ADD'} EVENT</button>
+                    {editingId && <button type="button" onClick={cancelEdit} className="px-4 bg-white/5 border border-white/10 text-white rounded hover:bg-white/10"><X className="w-4 h-4" /></button>}
+                  </div>
                 </form>
               </div>
               <div>
@@ -331,7 +415,10 @@ export default function AdminDashboard() {
                   {events.map(ev => (
                     <div key={ev.id} className="flex items-center justify-between bg-white/[0.02] border border-white/[0.05] p-3 rounded">
                       <div><p className="text-sm font-semibold">{ev.title}</p><p className="text-xs text-silver/50">{ev.month}/{ev.day}/{ev.year}</p></div>
-                      <button onClick={async ()=>{ await safeFetch(`/api/admin/events?id=${ev.id}`, 'DELETE'); fetchData(); showMsg("Deleted"); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <div className="flex gap-1">
+                        <button onClick={() => startEdit('events', ev)} className="text-electric-cyan p-2 hover:bg-electric-cyan/10 rounded"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={async ()=>{ await safeFetch(`/api/admin/events?id=${ev.id}`, 'DELETE'); fetchData(); showMsg("Deleted"); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </div>
                   ))}
                   {events.length === 0 && <p className="text-xs text-silver/40 font-mono">No events found.</p>}
@@ -344,7 +431,7 @@ export default function AdminDashboard() {
           {activeTab === 'resources' && (
             <div className="space-y-8">
               <div>
-                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">ADD NEW RESOURCE</h3>
+                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">{editingId ? 'EDIT' : 'ADD'} RESOURCE</h3>
                 <form onSubmit={addResource} className="grid grid-cols-2 gap-4">
                   <input required placeholder="Title" value={newResource.title} onChange={e=>setNewResource({...newResource, title: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input required placeholder="Category" value={newResource.category} onChange={e=>setNewResource({...newResource, category: e.target.value.toUpperCase()})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
@@ -353,7 +440,10 @@ export default function AdminDashboard() {
                   <input required placeholder="URL Link" value={newResource.href} onChange={e=>setNewResource({...newResource, href: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <select value={newResource.iconName} onChange={e=>setNewResource({...newResource, iconName: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white"><option value="BookOpen">Book</option><option value="Star">Star</option><option value="Zap">Zap (Lightning)</option><option value="Calculator">Calculator</option><option value="Target">Target (Bullseye)</option><option value="ExternalLink">Link</option></select>
                   <textarea required placeholder="Description" rows={3} value={newResource.description} onChange={e=>setNewResource({...newResource, description: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white resize-none" />
-                  <button type="submit" className="col-span-2 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">ADD RESOURCE</button>
+                  <div className="col-span-2 flex gap-2">
+                    <button type="submit" className="flex-1 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">{editingId ? 'UPDATE' : 'ADD'} RESOURCE</button>
+                    {editingId && <button type="button" onClick={cancelEdit} className="px-4 bg-white/5 border border-white/10 text-white rounded hover:bg-white/10"><X className="w-4 h-4" /></button>}
+                  </div>
                 </form>
               </div>
               <div>
@@ -362,7 +452,10 @@ export default function AdminDashboard() {
                   {resources.map(rs => (
                     <div key={rs.id} className="flex items-center justify-between bg-white/[0.02] border border-white/[0.05] p-3 rounded">
                       <div><p className="text-sm font-semibold">{rs.title}</p><p className="text-xs text-silver/50 truncate max-w-sm">{rs.href}</p></div>
-                      <button onClick={async()=>{ await safeFetch(`/api/admin/resources?id=${rs.id}`, 'DELETE'); fetchData(); showMsg("Deleted"); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <div className="flex gap-1">
+                        <button onClick={() => startEdit('resources', rs)} className="text-electric-cyan p-2 hover:bg-electric-cyan/10 rounded"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={async()=>{ await safeFetch(`/api/admin/resources?id=${rs.id}`, 'DELETE'); fetchData(); showMsg("Deleted"); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </div>
                   ))}
                   {resources.length === 0 && <p className="text-xs text-silver/40 font-mono">No resources found.</p>}
@@ -375,7 +468,7 @@ export default function AdminDashboard() {
           {activeTab === 'opportunities' && (
             <div className="space-y-8">
               <div>
-                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">ADD OPPORTUNITY</h3>
+                <h3 className="font-mono text-xs tracking-[0.2em] text-electric-cyan mb-4 border-b border-white/5 pb-2">{editingId ? 'EDIT' : 'ADD'} OPPORTUNITY</h3>
                 <form onSubmit={addOpp} className="grid grid-cols-2 gap-4">
                   <input required placeholder="Title" value={newOpp.title} onChange={e=>setNewOpp({...newOpp, title: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input required placeholder="Company" value={newOpp.company} onChange={e=>setNewOpp({...newOpp, company: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
@@ -385,7 +478,10 @@ export default function AdminDashboard() {
                   <input required placeholder="Tags (comma separated)" value={newOpp.tags} onChange={e=>setNewOpp({...newOpp, tags: e.target.value})} className="bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <input required placeholder="URL Link" value={newOpp.href} onChange={e=>setNewOpp({...newOpp, href: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white" />
                   <textarea required placeholder="Description" rows={3} value={newOpp.description} onChange={e=>setNewOpp({...newOpp, description: e.target.value})} className="col-span-2 bg-white/5 border border-white/10 p-2 rounded text-sm text-white resize-none" />
-                  <button type="submit" className="col-span-2 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">ADD OPPORTUNITY</button>
+                  <div className="col-span-2 flex gap-2">
+                    <button type="submit" className="flex-1 bg-electric-cyan/20 text-electric-cyan py-2 rounded text-xs font-bold tracking-wider hover:bg-electric-cyan/30">{editingId ? 'UPDATE' : 'ADD'} OPPORTUNITY</button>
+                    {editingId && <button type="button" onClick={cancelEdit} className="px-4 bg-white/5 border border-white/10 text-white rounded hover:bg-white/10"><X className="w-4 h-4" /></button>}
+                  </div>
                 </form>
               </div>
               <div>
@@ -394,7 +490,10 @@ export default function AdminDashboard() {
                   {opportunities.map(o => (
                     <div key={o.id} className="flex items-center justify-between bg-white/[0.02] border border-white/[0.05] p-3 rounded">
                       <div><p className="text-sm font-semibold">{o.title} <span className="text-silver/50 text-xs">@ {o.company}</span></p></div>
-                      <button onClick={async ()=>{ await safeFetch(`/api/admin/opportunities?id=${o.id}`, 'DELETE'); fetchData(); showMsg("Deleted"); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <div className="flex gap-1">
+                        <button onClick={() => startEdit('opportunities', o)} className="text-electric-cyan p-2 hover:bg-electric-cyan/10 rounded"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={async ()=>{ await safeFetch(`/api/admin/opportunities?id=${o.id}`, 'DELETE'); fetchData(); showMsg("Deleted"); }} className="text-red-400 p-2 hover:bg-red-400/10 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </div>
                   ))}
                   {opportunities.length === 0 && <p className="text-xs text-silver/40 font-mono">No opportunities found.</p>}
